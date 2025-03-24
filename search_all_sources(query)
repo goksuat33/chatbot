@@ -1,0 +1,31 @@
+from retrieval_grader import grade_retrieval
+from yoktez import search_yoktez
+from ulakbim import search_ulakbim
+from trdizin import search_trdizin
+from elsevier import search_elsevier
+from dergipark import search_dergipark_oai
+from semanticscholar import search_semantic_scholar
+
+def search_all_sources(query):
+    """Tüm akademik kaynaklardan veri çeker ve en iyi sonuçları sıralar."""
+    results = []
+
+    # Kaynaklardan veri çek
+    sources = {
+        "YÖK Tez": search_yoktez(query),
+        "ULAKBİM": search_ulakbim(query),
+        "TR Dizin": search_trdizin(query),
+        "Elsevier": search_elsevier(query),
+        "Dergipark": search_dergipark_oai(query),
+        "Semantic Scholar": search_semantic_scholar(query)
+    }
+
+    for source_name, source_data in sources.items():
+        if isinstance(source_data, list):
+            for item in source_data:
+                if "title" in item:
+                    results.append({"title": item["title"], "link": item["link"], "source": source_name})
+
+    # En iyi 5 sonucu sıralayarak döndür
+    ranked_results = sorted(results, key=lambda x: grade_retrieval(query, x["title"]), reverse=True)[:5]
+    return ranked_results
